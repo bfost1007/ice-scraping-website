@@ -63,3 +63,24 @@ a local in-memory Supabase fixture with synthetic credentials and records. It
 does not change your Supabase project. Stop other Next servers for this checkout
 before running it, because Next shares the `.next` output directory. Live
 Supabase setup and network access must be verified separately after migration.
+
+## Photo compression after approval
+
+New owner approvals retain the original front/back photos for review, then create
+WebP copies at quality 85 with a maximum edge of 2,048 pixels. Camera orientation
+is applied and metadata is removed from compressed copies. Small photos are never
+enlarged; if compression would increase file size, the original is retained.
+
+Both replacement objects are read back and verified before one optimistic job
+update switches their paths and records approval. Only then are the replaced
+originals deleted. A processing/upload/verification/conflict failure leaves the
+job submitted and its original photos untouched. Invalid photos can be replaced
+through Request redo. If deletion fails after approval, the portal shows a
+warning; the owner can use **Clean up original photos** on the approved visit.
+That action is safe to retry and cannot delete the displayed compressed copies.
+
+No extra database migration is needed. Run `npm ci` when updating this branch to
+install the server-side image library. Existing approved visits and rejected
+photos from earlier review attempts are not automatically processed or purged.
+Live Supabase configuration remains a prerequisite; automated verification uses
+only an isolated storage/database fixture.

@@ -32,3 +32,11 @@ Limits:
 - The standalone lint command still needs an ESLint configuration; build/type
   checks do not constitute an ESLint run.
 - This is evidence for the tested workflows, not a guarantee of zero bugs.
+
+Photo-compression verification additionally covers:
+- Real JPEG/PNG/WebP processing, resize limits, upright camera orientation,
+  metadata removal, preserving already-small originals, and invalid input.
+- Keeping proof unchanged until approval, then storing verified smaller copies.
+- Rollback for upload failures, damaged stored copies and concurrent job changes.
+- Approval remains valid when deletion fails; owner-only cleanup retries are
+  idempotent and preserve the compressed photos.

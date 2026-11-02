@@ -1,4 +1,8 @@
+import { approveWithCompressedPhotos, cleanupApprovedPhotos } from "../approved-photos";
 import { ApiError, body, databaseError, jobFor, json, saveJob, serviceDate, staffApi, text, uuid } from "../_shared";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 export async function POST(request: Request) {
   return staffApi(request, "owner", async (session, db) => {
@@ -34,7 +38,7 @@ export async function PATCH(request: Request) {
     const data = await body(request);
     const job = await jobFor(data.id, session, db);
     const action = data.action;
-    if (session.role === "worker" && ["approve", "redo", "assign"].includes(String(action))) throw new ApiError(403, "Only the owner can assign or review jobs.");
+    if (session.role === "worker" && ["approve", "redo", "assign", "cleanup_photos"].includes(String(action))) throw new ApiError(403, "Only the owner can assign or review jobs.");
     const notes = data.notes === undefined ? {} : { notes: text(data.notes, 1000, "visit notes", false) };
     if (session.role === "owner") {
       if (action === "assign") {
@@ -48,7 +52,13 @@ export async function PATCH(request: Request) {
         await saveJob(db, job, { worker_id: workerId });
       } else if (action === "approve") {
         if (job.status !== "submitted" || !job.front_photo_path || !job.back_photo_path) throw new ApiError(409, "Only a submitted job with both photos can be approved.");
-        await saveJob(db, job, { status: "completed", review_note: null });
+        const warning = await approveWithCompressedPhotos(db, job);
+        return json({ ok: true, warning });
+      } else if (action === "cleanup_photos") {
+        if (job.status !== "completed") throw new ApiError(409, "Photo cleanup is available after approval.");
+        const warning = await cleanupApprovedPhotos(db, job);
+        if (warning) throw new ApiError(503, warning);
+        return json({ ok: true });
       } else if (action === "redo") {
         if (job.status !== "submitted") throw new ApiError(409, "Only submitted jobs can be returned for a redo.");
         await saveJob(db, job, { status: "in_progress", completed_at: null, front_photo_path: null, back_photo_path: null, review_note: text(data.review_note, 1000, "a redo explanation") });

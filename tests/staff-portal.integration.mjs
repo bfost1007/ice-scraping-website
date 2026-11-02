@@ -7,7 +7,8 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, randomBytes } from 'node:crypto';
+import sharp from 'sharp';
 import { once } from 'node:events';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -34,6 +35,8 @@ const tables = {
 };
 const users = new Map();
 const objects = new Map();
+let storageFault = null;
+const proofImage = await sharp(randomBytes(800 * 600 * 3), { raw: { width: 800, height: 600, channels: 3 } }).png().toBuffer();
 let fixtureCalls = 0;
 let nextOutput = '';
 let nextProcess;
@@ -107,6 +110,7 @@ async function fixture(req, res) {
       if (table === 'staff_requests') inserted.forEach(item => { item.resolved ??= false; });
       tables[table].push(...inserted); rows = inserted;
     } else if (req.method === 'PATCH') {
+      if (table === 'service_jobs' && storageFault === 'job_commit' && body.status === 'completed') { storageFault = null; rows = []; }
       rows.forEach(item => Object.assign(item, body, { updated_at: new Date().toISOString() }));
     } else if (req.method === 'DELETE') {
       tables[table] = tables[table].filter(item => !rows.includes(item));
@@ -133,9 +137,21 @@ async function fixture(req, res) {
   }
   if (url.pathname.startsWith('/storage/v1/object/')) {
     const key = url.pathname.slice('/storage/v1/object/'.length);
-    if (req.method === 'POST' || req.method === 'PUT') { objects.set(key, raw); return send(res, 200, { Key: key, Id: randomUUID() }); }
-    if (req.method === 'DELETE') return send(res, 200, []);
-    if (req.method === 'GET' && objects.has(key)) { res.writeHead(200, { 'content-type': 'image/png' }); return res.end(objects.get(key)); }
+    if (req.method === 'POST' || req.method === 'PUT') {
+      if (storageFault === 'upload_back' && key.includes('/back-approved-')) { storageFault = null; return send(res, 503, { message: 'Fixture upload failure' }); }
+      objects.set(key, raw); return send(res, 200, { Key: key, Id: randomUUID() });
+    }
+    if (req.method === 'DELETE') {
+      const paths = body?.prefixes || [];
+      if (storageFault === 'delete_originals' && paths.some(p => !p.includes('-approved-'))) { storageFault = null; return send(res, 503, { message: 'Fixture cleanup failure' }); }
+      for (const p of paths) objects.delete(`${key}/${p}`);
+      return send(res, 200, []);
+    }
+    if (req.method === 'GET' && objects.has(key)) {
+      res.writeHead(200, { 'content-type': key.endsWith('.webp') ? 'image/webp' : 'image/png' });
+      if (storageFault === 'verify_back' && key.includes('/back-approved-')) { storageFault = null; return res.end(Buffer.from('corrupt stored copy')); }
+      return res.end(objects.get(key));
+    }
   }
   throw new Error(`Unimplemented fixture request ${req.method} ${url.pathname}`);
 }
@@ -259,11 +275,38 @@ try {
     expectStatus(await call('/api/staff/jobs', { method: 'PATCH', cookie: workerCookie, body: { id: job1.id, action: 'submit' } }), 409, 'Redo cannot reuse rejected proof');
     if (job1.status === 'pending') expectStatus(await call('/api/staff/jobs', { method: 'PATCH', cookie: workerCookie, body: { id: job1.id, action: 'start' } }), 200, 'Restart redo');
     for (const side of ['front', 'back']) {
-      const data = new FormData(); data.set('job_id', job1.id); data.set('side', side); data.set('file', new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jPrkAAAAASUVORK5CYII=', 'base64')], { type: 'image/png' }), 'retake.png');
+      const data = new FormData(); data.set('job_id', job1.id); data.set('side', side); data.set('file', new Blob([proofImage], { type: 'image/png' }), 'retake.png');
       expectStatus(await call('/api/staff/photos', { method: 'POST', cookie: workerCookie, body: data }), 200, 'Redo photo');
     }
     expectStatus(await call('/api/staff/jobs', { method: 'PATCH', cookie: workerCookie, body: { id: job1.id, action: 'submit' } }), 200, 'Resubmit');
-    expectStatus(await call('/api/staff/jobs', { method: 'PATCH', cookie: ownerCookie, body: { id: job1.id, action: 'approve' } }), 200, 'Approve'); assert.equal(job1.status, 'completed');
+    const originalFront = job1.front_photo_path, originalBack = job1.back_photo_path;
+    const originalKeys = [...objects.keys()].sort();
+    for (const fault of ['upload_back', 'verify_back', 'job_commit']) {
+      storageFault = fault;
+      const result = await call('/api/staff/jobs', { method: 'PATCH', cookie: ownerCookie, body: { id: job1.id, action: 'approve' } });
+      expectStatus(result, fault === 'job_commit' ? 409 : 503, `Safe approval failure: ${fault}`);
+      assert.equal(job1.status, 'submitted'); assert.equal(job1.front_photo_path, originalFront); assert.equal(job1.back_photo_path, originalBack);
+      assert.deepEqual([...objects.keys()].sort(), originalKeys, 'Failed approvals leave no replacement objects');
+      assert.deepEqual(objects.get(`service-photos/${originalFront}`), proofImage);
+      assert.deepEqual(objects.get(`service-photos/${originalBack}`), proofImage);
+    }
+    objects.set(`service-photos/${originalBack}`, Buffer.from('invalid original image'));
+    expectStatus(await call('/api/staff/jobs', { method: 'PATCH', cookie: ownerCookie, body: { id: job1.id, action: 'approve' } }), 422, 'Invalid original keeps submitted state');
+    assert.equal(job1.status, 'submitted'); assert.deepEqual([...objects.keys()].sort(), originalKeys);
+    objects.set(`service-photos/${originalBack}`, proofImage);
+    storageFault = 'delete_originals';
+    const approval = await call('/api/staff/jobs', { method: 'PATCH', cookie: ownerCookie, body: { id: job1.id, action: 'approve' } });
+    expectStatus(approval, 200, 'Approve and compress'); assert.equal(job1.status, 'completed'); assert.match(approval.data.warning, /originals/);
+    for (const path of [job1.front_photo_path, job1.back_photo_path]) {
+      assert.ok(path.includes('-approved-')); const bytes = objects.get(`service-photos/${path}`);
+      assert.ok(bytes.length < proofImage.length); assert.equal((await sharp(bytes).metadata()).format, 'webp');
+    }
+    assert.ok(objects.has(`service-photos/${originalFront}`), 'Temporary deletion failure keeps originals');
+    expectStatus(await call('/api/staff/jobs', { method: 'PATCH', cookie: workerCookie, body: { id: job1.id, action: 'cleanup_photos' } }), 403, 'Worker cannot delete originals');
+    expectStatus(await call('/api/staff/jobs', { method: 'PATCH', cookie: ownerCookie, body: { id: job1.id, action: 'cleanup_photos' } }), 200, 'Cleanup retry');
+    assert.equal(objects.has(`service-photos/${originalFront}`), false); assert.equal(objects.has(`service-photos/${originalBack}`), false);
+    expectStatus(await call('/api/staff/jobs', { method: 'PATCH', cookie: ownerCookie, body: { id: job1.id, action: 'cleanup_photos' } }), 200, 'Cleanup is idempotent');
+    assert.ok(objects.has(`service-photos/${job1.front_photo_path}`)); assert.ok(objects.has(`service-photos/${job1.back_photo_path}`));
     const reopen = await call('/api/staff/jobs', { method: 'PATCH', cookie: workerCookie, body: { id: job1.id, action: 'start' } }); assert.ok([400, 409, 422].includes(reopen.status)); assert.equal(job1.status, 'completed');
   });
   await step('Worker requests persist and only the owner can resolve them', async () => {
