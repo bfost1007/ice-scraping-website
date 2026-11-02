@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { COOKIE_NAME, verifySession } from "./app/lib/session";
 
-export function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname.startsWith("/internal")) {
-    const session = request.cookies.get("blake_internal_session")?.value;
-    if (!session || session !== process.env.INTERNAL_SESSION_TOKEN) return NextResponse.redirect(new URL("/login", request.url));
-  }
+export async function middleware(request: NextRequest) {
+  if (!await verifySession(request.cookies.get(COOKIE_NAME)?.value)) return NextResponse.redirect(new URL("/login", request.url));
   return NextResponse.next();
 }
 

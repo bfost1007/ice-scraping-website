@@ -1,0 +1,79 @@
+@font-face{font-family:"barlow";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/barlow-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"barlow";font-style:normal;font-weight:500;font-display:swap;src:url("/fonts/barlow-latin-500-normal.woff2") format("woff2")}
+@font-face{font-family:"barlow";font-style:normal;font-weight:600;font-display:swap;src:url("/fonts/barlow-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"barlow-condensed";font-style:normal;font-weight:600;font-display:swap;src:url("/fonts/barlow-condensed-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"barlow-condensed";font-style:normal;font-weight:700;font-display:swap;src:url("/fonts/barlow-condensed-latin-700-normal.woff2") format("woff2")}
+/* Homepage styles copied from websiteprotype-9.html and scoped to this route. */
+.prototype-home{
+ --bg:#EDF2F5;--surface:#FFFFFF;--ink:#0F1E2A;--muted:#566874;--line:#D3DEE5;
+ --accent:#2A86B8;--accent-ink:#FFFFFF;--ice:#D6EAF5;--ice-ink:#0E4766;
+ --display:"barlow-condensed","Arial Narrow",system-ui,sans-serif;
+ --body:"barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+ margin:8px;min-height:100vh;display:flex;flex-direction:column;background:var(--surface);
+ color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.4;-webkit-text-size-adjust:100%;
+}
+.prototype-home main{display:flex;flex-direction:column;margin:0;padding:0;gap:0}
+.prototype-home button,.prototype-home a{font-family:inherit}
+.prototype-home :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.prototype-home h1{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.05;margin:0;text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+.prototype-home h2{font-family:var(--display);font-weight:700;font-size:19px;margin:0;text-transform:uppercase;letter-spacing:.04em}
+.prototype-home .gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.prototype-home .form-hint{font-size:13px;color:var(--muted);margin:0}
+.prototype-home .public-login-btn{display:inline-flex;align-items:center;text-decoration:none}
+@media(prefers-color-scheme:dark){
+ body:has(.prototype-home){background:#0B151D}
+ .prototype-home{--bg:#0B151D;--surface:#13232E;--ink:#E7F0F5;--muted:#93A6B3;--line:#243846;--accent:#69C7E8;--accent-ink:#07212C;--ice:#1B3A4D;--ice-ink:#B9DDF0;color-scheme:dark}
+}
+.prototype-home .signup-link{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:7px 11px;border:1px solid var(--accent);border-radius:10px;background:var(--accent);color:var(--accent-ink);font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;cursor:pointer;font-family:inherit}
+.prototype-home .public-header{max-width:1160px;margin:auto;min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.prototype-home .public-brand{font-family:var(--display);font-size:26px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;text-decoration:none;color:var(--ink)}
+.prototype-home .public-brand b{color:var(--accent)}
+.prototype-home .public-links{display:flex;align-items:center;gap:22px}
+.prototype-home .public-links{flex-wrap:wrap}
+.prototype-home #services,.prototype-home #how-it-works{scroll-margin-top:24px}
+.prototype-home .public-links a:not(.signup-link):not(.public-login-btn){color:var(--ink);font-size:14px;font-weight:600;text-decoration:none}
+.prototype-home .public-hero{max-width:1160px;margin:0 auto;padding:76px 24px 64px;min-height:460px;display:grid;grid-template-columns:1.15fr .85fr;align-items:center;gap:48px}
+.prototype-home .public-kicker{color:var(--accent);font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.prototype-home .public-hero h1{max-width:680px;font-family:var(--body);font-size:clamp(48px,8vw,88px);line-height:.98;letter-spacing:-.055em;text-transform:none;margin:14px 0 20px}
+.prototype-home .public-hero p{max-width:560px;color:var(--muted);font-size:19px;line-height:1.55;margin:0 0 26px}
+.prototype-home .public-cta{display:inline-flex;align-items:center;justify-content:center;min-height:50px;padding:12px 22px;border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:700;text-decoration:none;cursor:pointer}
+.prototype-home .public-meta{display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:22px;color:var(--muted);font-size:13px;font-weight:600}
+.prototype-home .hero-art{min-height:300px;border-radius:28px;background:linear-gradient(145deg,var(--ice),var(--bg));display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.prototype-home .hero-art:before,.prototype-home .hero-art:after{content:"";position:absolute;border:1px solid rgba(42,134,184,.22);border-radius:50%;width:300px;height:300px}
+.prototype-home .hero-art:after{width:210px;height:210px}
+.prototype-home .hero-snow{font-size:150px;line-height:1;color:var(--accent);font-weight:400;z-index:1;transform:rotate(12deg)}
+.prototype-home .hero-tag{position:absolute;z-index:2;right:20px;bottom:20px;padding:12px 16px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-weight:700;box-shadow:0 10px 30px rgba(15,30,42,.08)}
+.prototype-home .public-section{padding:64px 24px;background:var(--bg)}
+.prototype-home .public-section.white{background:var(--surface)}
+.prototype-home .public-inner{max-width:1120px;margin:auto}
+.prototype-home .public-section h2{font-family:var(--body);font-size:clamp(28px,4vw,42px);letter-spacing:-.03em;text-transform:none;margin-bottom:10px}
+.prototype-home .public-intro{max-width:660px;color:var(--muted);margin:0 0 24px;font-size:16px}
+.prototype-home .service-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.prototype-home .service-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px}
+.prototype-home .public-section.white .service-card{background:var(--bg)}
+.prototype-home .service-card h3{font-family:var(--display);font-size:27px;margin:0 0 8px;text-transform:uppercase}
+.prototype-home .service-card p{color:var(--muted);margin:0 0 18px}
+.prototype-home .service-rate{font-size:42px;font-weight:800;letter-spacing:-.045em;line-height:1.05}
+.prototype-home .service-rate small{font-size:15px;color:var(--muted);font-weight:600;letter-spacing:0}
+.prototype-home .semester-total{margin-top:8px;font-size:15px;color:var(--muted);font-weight:600}
+.prototype-home .service-extra{margin-top:16px;padding:18px 20px;background:var(--ice);color:var(--ice-ink);border-radius:14px;display:flex;flex-wrap:wrap;gap:8px 26px;font-size:14px}
+.prototype-home .public-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:24px}
+.prototype-home .public-step{border-top:2px solid var(--accent);padding:16px 8px 0 0}
+.prototype-home .public-step b{display:block;font-size:16px;margin-bottom:6px}
+.prototype-home .public-step span{color:var(--muted);font-size:14px}
+.prototype-home .public-bottom{max-width:1120px;margin:auto;padding:46px 24px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.prototype-home .public-bottom h2{font-family:var(--body);font-size:30px;margin:0 0 6px;letter-spacing:-.03em;text-transform:none}
+.prototype-home .public-bottom p{color:var(--muted);margin:0}
+.prototype-home .public-footer{border-top:1px solid var(--line);padding:18px 24px;color:var(--muted);font-size:13px}
+.prototype-home .public-footer-inner{max-width:1120px;margin:auto;display:flex;justify-content:space-between;gap:16px}
+.prototype-home .public-login-btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:10px;min-height:40px;padding:8px 14px;font-weight:700;font-family:inherit;cursor:pointer}@media(max-width:760px){.prototype-home .public-header{padding-block:12px;min-height:0;flex-wrap:wrap}
+.prototype-home .public-links{gap:10px}
+.prototype-home .public-links a:not(.signup-link):not(.public-login-btn){display:inline-flex}
+.prototype-home .public-hero{grid-template-columns:1fr;gap:28px;padding:48px 20px}
+.prototype-home .hero-art{min-height:210px}
+.prototype-home .hero-snow{font-size:110px}
+.prototype-home .service-cards{grid-template-columns:1fr}
+.prototype-home .public-steps{grid-template-columns:1fr;gap:22px}
+.prototype-home .public-section{padding:48px 20px}
+.prototype-home .public-bottom{padding:38px 20px;align-items:flex-start;flex-direction:column}
+.prototype-home .public-footer-inner{flex-direction:column}}

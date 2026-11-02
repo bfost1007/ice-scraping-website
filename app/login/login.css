@@ -1,0 +1,24 @@
+@font-face{font-family:"barlow";font-style:normal;font-weight:400;font-display:swap;src:url("/fonts/barlow-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"barlow";font-style:normal;font-weight:600;font-display:swap;src:url("/fonts/barlow-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"barlow-condensed";font-style:normal;font-weight:700;font-display:swap;src:url("/fonts/barlow-condensed-latin-700-normal.woff2") format("woff2")}
+.staff-signin{--signin-bg:#edf2f5;--signin-surface:#fff;--signin-ink:#0f1e2a;--signin-muted:#566874;--signin-line:#d3dee5;--signin-accent:#2a86b8;--signin-accent-ink:#fff;min-height:100dvh;background:var(--signin-bg);color:var(--signin-ink);padding:48px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:"barlow",system-ui,sans-serif;line-height:1.4}
+.staff-signin-brand{font-family:"barlow-condensed","Arial Narrow",sans-serif;font-size:30px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;text-decoration:none;color:var(--signin-ink);margin-bottom:26px}
+.staff-signin-brand b{color:var(--signin-accent)}
+.staff-signin-card{width:100%;max-width:430px;padding:30px;background:var(--signin-surface);border:1px solid var(--signin-line);border-radius:18px;box-shadow:0 16px 42px rgba(15,30,42,.06)}
+.staff-signin-kicker{color:var(--signin-accent);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;margin:0 0 8px}
+.staff-signin-card h1{font-family:"barlow",system-ui,sans-serif;font-size:36px;letter-spacing:-.04em;line-height:1.05;margin:0 0 12px}
+.staff-signin-intro{color:var(--signin-muted);font-size:15px;margin:0 0 24px}
+.staff-signin-switch{display:flex;border:1px solid var(--signin-line);border-radius:999px;padding:4px;background:var(--signin-bg);margin-bottom:24px}
+.staff-signin-switch button{flex:1;min-height:38px;background:transparent;border:0;border-radius:999px;color:var(--signin-muted);font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.staff-signin-switch button[aria-pressed="true"]{background:var(--signin-ink);color:var(--signin-surface)}
+.staff-signin form{display:flex;flex-direction:column;gap:8px}
+.staff-signin label{font-size:14px;font-weight:600}
+.staff-signin input{width:100%;min-height:46px;padding:10px 12px;border:1px solid var(--signin-line);border-radius:10px;background:var(--signin-surface);color:var(--signin-ink);font:inherit;margin:0 0 10px}
+.staff-signin input:focus-visible,.staff-signin button:focus-visible,.staff-signin a:focus-visible{outline:2px solid var(--signin-accent);outline-offset:3px}
+.staff-signin-submit{display:flex;align-items:center;justify-content:center;gap:10px;min-height:48px;margin-top:8px;padding:12px 16px;border:0;border-radius:10px;background:var(--signin-accent);color:var(--signin-accent-ink);font:inherit;font-weight:700;cursor:pointer}
+.staff-signin button:disabled{opacity:.65;cursor:wait}
+.staff-signin-error{color:#b42525;border:1px solid #f1b9b9;background:#fbe0e0;border-radius:10px;padding:10px 12px;font-size:14px;margin:0}
+.staff-signin-help{font-size:13px;color:var(--signin-muted);margin:18px 0 0}
+.staff-signin-back{font-size:14px;color:var(--signin-muted);margin-top:24px}
+@media(max-width:480px){.staff-signin{padding:32px 16px}.staff-signin-card{padding:24px}}
+@media(prefers-color-scheme:dark){.staff-signin{--signin-bg:#0b151d;--signin-surface:#13232e;--signin-ink:#e7f0f5;--signin-muted:#93a6b3;--signin-line:#243846;--signin-accent:#69c7e8;--signin-accent-ink:#07212c}}
